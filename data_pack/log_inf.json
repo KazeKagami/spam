@@ -1,0 +1,152 @@
+[
+  {
+    "username": "test",
+    "action": "Вход с ролью WRITER",
+    "timestamp": "2026-05-09 17:39:31"
+  },
+  {
+    "username": "test",
+    "action": "Создан пост #3: Тестик",
+    "timestamp": "2026-05-09 17:44:40"
+  },
+  {
+    "username": "test",
+    "action": "Выход из системы",
+    "timestamp": "2026-05-09 17:44:47"
+  },
+  {
+    "username": "viewer",
+    "action": "Неудачная попытка входа",
+    "timestamp": "2026-05-09 17:45:11"
+  },
+  {
+    "username": " test",
+    "action": "Вход с ролью VIEWER",
+    "timestamp": "2026-05-09 17:45:29"
+  },
+  {
+    "username": " test",
+    "action": "Одобрен пост #3",
+    "timestamp": "2026-05-09 17:45:38"
+  },
+  {
+    "username": " test",
+    "action": "Выход из системы",
+    "timestamp": "2026-05-09 17:45:44"
+  },
+  {
+    "username": "test",
+    "action": "Вход с ролью PUBLISHER",
+    "timestamp": "2026-05-09 17:45:57"
+  },
+  {
+    "username": "test",
+    "action": "Создан пост #4: Тестовый",
+    "timestamp": "2026-05-09 17:58:31"
+  },
+  {
+    "username": "test",
+    "action": "Одобрен пост #4",
+    "timestamp": "2026-05-09 17:58:34"
+  },
+  {
+    "username": "test",
+    "action": "Выход из системы",
+    "timestamp": "2026-05-09 18:15:17"
+  },
+  {
+    "username": "test",
+    "action": "Вход с ролью WRITER",
+    "timestamp": "2026-05-09 18:37:33"
+  },
+  {
+    "username": "test",
+    "action": "Создан пост #5: Тест с 1 файлами",
+    "timestamp": "2026-05-09 18:43:27"
+  },
+  {
+    "username": "test",
+    "action": "Выход из системы",
+    "timestamp": "2026-05-09 18:43:51"
+  },
+  {
+    "username": "test",
+    "action": "Вход с ролью PUBLISHER",
+    "timestamp": "2026-05-09 18:43:55"
+  },
+  {
+    "username": "test",
+    "action": "Одобрен пост #5",
+    "timestamp": "2026-05-09 18:44:02"
+  },
+  {
+    "username": "test",
+    "action": "Создан пост #6: Тест 2.0 с 1 файлами",
+    "timestamp": "2026-05-09 18:48:50"
+  },
+  {
+    "username": "test",
+    "action": "Одобрен пост #6",
+    "timestamp": "2026-05-09 18:48:57"
+  },
+  {
+    "username": "test",
+    "action": "Выход из системы",
+    "timestamp": "2026-05-09 18:48:58"
+  },
+  {
+    "username": "test",
+    "action": "Вход с ролью PUBLISHER",
+    "timestamp": "2026-05-09 18:49:19"
+  },
+  {
+    "username": "test",
+    "action": "Выход из системы",
+    "timestamp": "2026-05-09 18:51:25"
+  },
+  {
+    "username": "publisher",
+    "action": "Вход с ролью PUBLISHER",
+    "timestamp": "2026-05-09 19:11:34"
+  },
+  {
+    "username": "ADMIN",
+    "action": "Неудачная попытка входа",
+    "timestamp": "2026-05-12 13:02:22"
+  },
+  {
+    "username": "ADMIN",
+    "action": "Неудачная попытка входа",
+    "timestamp": "2026-05-12 13:02:31"
+  },
+  {
+    "username": "WRITER",
+    "action": "Неудачная попытка входа",
+    "timestamp": "2026-05-12 13:02:46"
+  },
+  {
+    "username": "test",
+    "action": "Неудачная попытка входа",
+    "timestamp": "2026-05-12 13:10:40"
+  },
+  {
+    "username": "admin",
+    "action": "Вход с ролью ADMIN",
+    "timestamp": "2026-05-12 13:12:13"
+  },
+  {
+    "username": "admin",
+    "action": "Вход с ролью ADMIN",
+    "timestamp": "2026-05-13 08:15:27"
+  },
+  {
+    "username": "admin",
+    "action": "Создан пост #7: Учишься в Ростове и хочешь работать в самом технологичном банке? Самый прямой путь — кейс-чемпионат от Альфа-Банка! с 0 файлами",
+    "timestamp": "2026-05-13 10:35:41"
+  },
+  {
+    "username": "admin",
+    "action": "Одобрен пост #7",
+    "timestamp": "2026-05-13 10:46:11"
+  }
+]

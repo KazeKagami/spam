@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>🏢 Управление сообществами</h2>
+
+<div style="margin-bottom: 30px;">
+    <button onclick="toggleForm()" class="btn btn-primary">➕ Добавить сообщество</button>
+</div>
+
+<div id="addGroupForm" style="display: none; background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+    <h3>Новое сообщество</h3>
+    <form method="POST" action="{{ url_for('add_group') }}">
+        <div class="form-group">
+            <label for="platform">Платформа *</label>
+            <select id="platform" name="platform" required onchange="togglePlatformFields()">
+                <option value="vk">ВКонтакте (VK)</option>
+                <option value="ok">Одноклассники (OK.ru)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="name">Название сообщества *</label>
+            <input type="text" id="name" name="name" required placeholder="Например: Основная группа VK">
+        </div>
+
+        <div class="form-group">
+            <label for="group_id">ID сообщества *</label>
+            <input type="text" id="group_id" name="group_id" required placeholder="Например: 123456789">
+            <small style="color: #666;">VK: id из ссылки club123, OK: числовой ID группы</small>
+        </div>
+
+        <div class="form-group">
+            <label for="description">Описание</label>
+            <input type="text" id="description" name="description" placeholder="Краткое описание">
+        </div>
+
+        <div class="form-group">
+            <label for="token">Токен доступа *</label>
+            <textarea id="token" name="token" rows="3" required placeholder="Вставьте токен доступа"></textarea>
+            <small style="color: #666;">Для VK: токен с правами wall, для OK: access_token</small>
+        </div>
+
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="test_token" value="1"> Проверить токен перед сохранением
+            </label>
+        </div>
+
+        <button type="submit" class="btn btn-success">💾 Сохранить</button>
+        <button type="button" onclick="toggleForm()" class="btn">Отмена</button>
+    </form>
+</div>
+
+<h3>Существующие сообщества</h3>
+
+{% if groups %}
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">Платформа</th>
+                    <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">Название</th>
+                    <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">ID</th>
+                    <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">Описание</th>
+                    <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">Токен</th>
+                    <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for group in groups %}
+                <tr>
+                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+                        {% if group.platform == 'vk' %}
+                            <span style="color: #2787F5; font-weight: bold;">📘 VK</span>
+                        {% elif group.platform == 'ok' %}
+                            <span style="color: #F58220; font-weight: bold;">📙 OK.ru</span>
+                        {% else %}
+                            <span style="color: #666;">❓ Unknown</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">{{ group.name }}</td>
+                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">{{ group.id }}</td>
+                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">{{ group.description or '—' }}</td>
+                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+                        <span title="{{ group.token }}">{{ group.token[:20] }}...</span>
+                    </td>
+                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+                        <button onclick="editGroup('{{ group.id }}')" class="btn btn-warning" style="padding: 5px 10px;">✏️</button>
+                        <button onclick="deleteGroup('{{ group.id }}', '{{ group.name }}')" class="btn btn-danger" style="padding: 5px 10px;">🗑️</button>
+                        <button onclick="testGroup('{{ group.id }}')" class="btn btn-info" style="padding: 5px 10px;">🔍 Тест</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <p style="text-align: center; padding: 50px;">Нет добавленных сообществ</p>
+{% endif %}
+
+<div style="margin-top: 20px;">
+    <a href="{{ url_for('dashboard') }}" class="btn">← Назад</a>
+</div>
+
+<script>
+function toggleForm() {
+    var form = document.getElementById('addGroupForm');
+    if (form.style.display === 'none') {
+        form.style.display = 'block';
+    } else {
+        form.style.display = 'none';
+    }
+}
+
+function editGroup(groupId) {
+    window.location.href = '/edit-group/' + groupId;
+}
+
+function deleteGroup(groupId, groupName) {
+    if (confirm('Удалить сообщество "' + groupName + '"? Все посты, опубликованные в него, останутся, но новые публикации станут недоступны.')) {
+        window.location.href = '/delete-group/' + groupId;
+    }
+}
+
+function testGroup(groupId) {
+    fetch('/test-group/' + groupId)
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+        });
+}
+</script>
+{% endblock %}

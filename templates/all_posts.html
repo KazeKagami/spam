@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>📋 Все посты</h2>
+
+{% if posts %}
+    {% for post in posts %}
+    <div class="post-card">
+        <div class="post-title">{{ post.title }}</div>
+        <div class="post-meta">
+            ID: {{ post.id }} | Автор: {{ post.user_id }} | Создан: {{ post.created_at }}
+            {% if post.approved_at %} | Одобрен: {{ post.approved_at }} ({{ post.approved_by }}){% endif %}
+            {% if post.published_at %} | Опубликован: {{ post.published_at }}{% endif %}
+        </div>
+        <div class="post-text">{{ post.text }}</div>
+
+        {% if post.media and post.media|length > 0 %}
+        <div style="margin: 15px 0; padding: 15px; background: #f5f5f5; border-radius: 8px;">
+            <strong>📎 Вложения ({{ post.media|length }} файлов):</strong>
+            <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px;">
+                {% for file in post.media %}
+                <div style="text-align: center;">
+                    {% set file_ext = file.split('.')[-1].lower() %}
+                    {% if file_ext in ['jpg', 'jpeg', 'png', 'gif'] %}
+                        <img src="/uploads/{{ file.split('/')[-1] }}"
+                             style="max-width: 200px; max-height: 150px; border-radius: 5px; border: 1px solid #ddd; cursor: pointer;"
+                             onclick="window.open(this.src)"
+                             alt="preview">
+                        <div style="font-size: 11px; margin-top: 5px; color: #666;">Фото</div>
+                    {% elif file_ext in ['mp4', 'avi', 'mov'] %}
+                        <video style="max-width: 200px; max-height: 150px; border-radius: 5px; border: 1px solid #ddd;" controls>
+                            <source src="/uploads/{{ file.split('/')[-1] }}">
+                        </video>
+                        <div style="font-size: 11px; margin-top: 5px; color: #666;">Видео</div>
+                    {% else %}
+                        <div style="width: 150px; padding: 20px; background: #e0e0e0; border-radius: 5px; text-align: center;">
+                            📄 {{ file.split('/')[-1] }}
+                        </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div>
+            {% if post.status_ == 'pending' %}
+                <span class="post-status status-pending">На модерации</span>
+            {% elif post.status_ == 'approved' %}
+                <span class="post-status status-approved">Одобрено</span>
+            {% elif post.status_ == 'published' %}
+                <span class="post-status status-published">Опубликовано</span>
+            {% elif post.status_ == 'rejected' %}
+                <span class="post-status status-rejected">Отклонено</span>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <p style="text-align: center; padding: 50px;">Нет постов</p>
+{% endif %}
+
+<div style="text-align: center; margin-top: 20px;">
+    <a href="{{ url_for('dashboard') }}" class="btn">← Назад</a>
+</div>
+{% endblock %}

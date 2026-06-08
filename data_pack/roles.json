@@ -1,0 +1,14 @@
+[
+    {
+        "ROLE": "WRITER",
+        "PASSWORD": "12345"
+    },
+    {
+        "ROLE": "VIEWER",
+        "PASSWORD": "VEIW123"
+    },
+    {
+        "ROLE": "PUBLISHER",
+        "PASSWORD": "LALKATI"
+    }
+]

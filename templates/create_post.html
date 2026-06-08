@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>✍️ Создание нового поста</h2>
+
+<!-- AI Generator Modal -->
+<div id="aiGeneratorModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000;">
+    <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:white; padding:30px; border-radius:10px; width:500px; max-width:90%;">
+        <h3>🤖 AI Генератор постов</h3>
+        <p style="color:#666; margin-bottom:15px;">AI проанализирует ваши предыдущие публикации и создаст новый пост в том же стиле.</p>
+        
+        <div class="form-group">
+            <label for="aiTopic">Тема поста:</label>
+            <input type="text" id="aiTopic" placeholder="Например: Новости криптовалют, Советы по здоровью, Обзор фильмов..." style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;">
+            <small style="color:#666;">Опишите тему подробнее для лучшего результата</small>
+        </div>
+        
+        <div id="aiLoadingStatus" style="display:none; text-align:center; padding:20px;">
+            <div>⏳ AI анализирует стиль и генерирует пост...</div>
+            <div style="font-size:12px; color:#666; margin-top:10px;">Это может занять 10-20 секунд</div>
+        </div>
+        
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button onclick="generateAIPost()" class="btn btn-primary" style="flex:1;">🎨 Сгенерировать пост</button>
+            <button onclick="closeAIModal()" class="btn" style="flex:1;">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<form method="POST" enctype="multipart/form-data">
+    <div class="form-group">
+        <label for="title">Заголовок</label>
+        <input type="text" id="title" name="title" required placeholder="Введите заголовок поста">
+    </div>
+
+    <div class="form-group">
+        <label for="text">Текст поста</label>
+        <textarea id="postText" name="text" required placeholder="Введите текст поста..." rows="10"></textarea>
+    </div>
+
+    <!-- AI Buttons Row -->
+    <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+        <button type="button" class="btn btn-info" onclick="openAIGenerator()">
+            🎨 Сгенерировать с AI
+        </button>
+        <button type="button" class="btn btn-info" onclick="improveText()">
+            ✍️ Улучшить текст
+        </button>
+        <button type="button" class="btn btn-info" onclick="checkGrammar()">
+            📝 Проверить грамматику
+        </button>
+        <button type="button" class="btn btn-info" onclick="suggestTitles()">
+            💡 Предложить заголовки
+        </button>
+    </div>
+
+    <div class="form-group">
+        <label for="media">Прикрепить файлы (фото/видео)</label>
+        <input type="file" id="media" name="media" multiple accept="image/*,video/*">
+        <small style="color: #666; display: block; margin-top: 5px;">Можно выбрать несколько файлов. Поддерживаются: JPG, PNG, GIF, MP4, AVI, MOV</small>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Отправить на модерацию</button>
+    <a href="{{ url_for('dashboard') }}" class="btn">Отмена</a>
+</form>
+
+<script>
+let currentGeneratedText = "";
+
+function openAIGenerator() {
+    document.getElementById("aiGeneratorModal").style.display = "block";
+    document.getElementById("aiTopic").value = "";
+    document.getElementById("aiLoadingStatus").style.display = "none";
+}
+
+function closeAIModal() {
+    document.getElementById("aiGeneratorModal").style.display = "none";
+}
+
+async function generateAIPost() {
+    const topic = document.getElementById("aiTopic").value.trim();
+    
+    if (!topic) {
+        alert("Пожалуйста, укажите тему поста");
+        return;
+    }
+    
+    const generateBtn = event.target;
+    const loadingDiv = document.getElementById("aiLoadingStatus");
+    
+    generateBtn.disabled = true;
+    loadingDiv.style.display = "block";
+    
+    try {
+        const response = await fetch("/ai/generate-post", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ topic: topic })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const textarea = document.getElementById("postText");
+            textarea.value = data.generated_text;
+            currentGeneratedText = data.generated_text;
+            
+            let message = "✅ Пост успешно сгенерирован!";
+            if (data.moderation_passed) {
+                message += "\n\n📋 AI проверил: " + data.moderation_note;
+            }
+            alert(message);
+            closeAIModal();
+        } else {
+            alert("❌ Ошибка: " + data.error);
+        }
+    } catch (error) {
+        alert("⚠️ Ошибка соединения: " + error.message);
+    } finally {
+        generateBtn.disabled = false;
+        loadingDiv.style.display = "none";
+    }
+}
+
+async function improveText() {
+    const textarea = document.getElementById("postText");
+    const text = textarea.value;
+    
+    if (!text.trim()) {
+        alert("Пожалуйста, введите текст для улучшения");
+        return;
+    }
+
+    const originalText = textarea.value;
+    textarea.value = "⏳ AI улучшает текст...";
+    textarea.disabled = true;
+
+    try {
+        const response = await fetch("/ai/improve-text", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ text: originalText })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            textarea.value = data.improved_text;
+            alert("✅ Текст успешно улучшен!");
+        } else {
+            textarea.value = originalText;
+            alert("❌ Ошибка: " + data.error);
+        }
+    } catch (error) {
+        textarea.value = originalText;
+        alert("⚠️ Ошибка соединения с AI сервером");
+    } finally {
+        textarea.disabled = false;
+    }
+}
+
+async function checkGrammar() {
+    const textarea = document.getElementById("postText");
+    const text = textarea.value;
+    
+    if (!text.trim()) {
+        alert("Пожалуйста, введите текст для проверки");
+        return;
+    }
+
+    try {
+        const response = await fetch("/ai/check-grammar", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ text: text })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert("📋 Результат проверки грамматики:\n\n" + data.result);
+        } else {
+            alert("❌ Ошибка: " + data.error);
+        }
+    } catch (error) {
+        alert("⚠️ Ошибка соединения с AI сервером");
+    }
+}
+
+async function suggestTitles() {
+    const textarea = document.getElementById("postText");
+    const text = textarea.value;
+    
+    if (!text.trim()) {
+        alert("Пожалуйста, введите текст для генерации заголовков");
+        return;
+    }
+
+    try {
+        const response = await fetch("/ai/suggest-titles", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ text: text })
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.titles) {
+            let titleList = "💡 Предложенные заголовки:\n\n";
+            data.titles.forEach((title, index) => {
+                titleList += `${index + 1}. ${title}\n`;
+            });
+            alert(titleList);
+        } else {
+            alert("❌ Ошибка: " + (data.error || "Не удалось сгенерировать заголовки"));
+        }
+    } catch (error) {
+        alert("⚠️ Ошибка соединения с AI сервером");
+    }
+}
+
+// Press Escape to close modal
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeAIModal();
+    }
+});
+</script>
+
+<style>
+.btn-info {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+}
+
+.btn-info:hover {
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46a0 100%);
+    transform: translateY(-1px);
+}
+</style>
+{% endblock %}

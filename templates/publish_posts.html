@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>📤 Публикация в социальные сети</h2>
+
+{% if posts %}
+    <h3>Готовы к публикации:</h3>
+    {% for post in posts %}
+    <div class="post-card">
+        <div class="post-title">{{ post.title }}</div>
+        <div class="post-meta">
+            Автор: {{ post.user_id }} | Одобрен: {{ post.approved_at }}
+        </div>
+        <div class="post-text">{{ post.text }}</div>
+
+        {% if post.media and post.media|length > 0 %}
+        <div style="margin: 15px 0; padding: 15px; background: #f5f5f5; border-radius: 8px;">
+            <strong>📎 Вложения ({{ post.media|length }} файлов):</strong>
+            <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px;">
+                {% for file in post.media %}
+                <div style="text-align: center;">
+                    {% set file_ext = file.split('.')[-1].lower() %}
+                    {% if file_ext in ['jpg', 'jpeg', 'png', 'gif'] %}
+                        <img src="/uploads/{{ file.split('/')[-1] }}"
+                             style="max-width: 200px; max-height: 150px; border-radius: 5px; border: 1px solid #ddd; cursor: pointer;"
+                             onclick="window.open(this.src)"
+                             alt="preview">
+                        <div style="font-size: 11px; margin-top: 5px; color: #666;">Фото</div>
+                    {% elif file_ext in ['mp4', 'avi', 'mov'] %}
+                        <video style="max-width: 200px; max-height: 150px; border-radius: 5px; border: 1px solid #ddd;" controls>
+                            <source src="/uploads/{{ file.split('/')[-1] }}">
+                        </video>
+                        <div style="font-size: 11px; margin-top: 5px; color: #666;">Видео</div>
+                    {% else %}
+                        <div style="width: 150px; padding: 20px; background: #e0e0e0; border-radius: 5px; text-align: center;">
+                            📄 {{ file.split('/')[-1] }}
+                        </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('publish_to_multiple_groups', post_id=post.id) }}">
+            <div style="margin: 15px 0; padding: 15px; background: #e8f4f8; border-radius: 8px;">
+                <strong>🏢 Выберите сообщества для публикации:</strong>
+                <div style="margin-top: 10px;">
+                    {% for group in groups %}
+                    <label style="display: block; margin: 5px 0; cursor: pointer;">
+                        <input type="checkbox" name="groups" value="{{ group.id }}" style="margin-right: 10px;">
+                        {% if group.platform == 'vk' %}
+                            <span style="color: #2787F5;">📘 VK</span>
+                        {% elif group.platform == 'ok' %}
+                            <span style="color: #F58220;">📙 OK.ru</span>
+                        {% endif %}
+                        <strong>{{ group.name }}</strong> - {{ group.description or 'Без описания' }}
+                        <small style="color: #666;">(ID: {{ group.id }})</small>
+                    </label>
+                    {% else %}
+                    <p style="color: #999; text-align: center;">Нет добавленных сообществ. Добавьте их в разделе "Управление сообществами"</p>
+                    {% endfor %}
+                </div>
+            </div>
+            <button type="submit" class="btn btn-success" {% if not groups %}disabled{% endif %}>📤 Опубликовать в выбранные сообщества</button>
+        </form>
+
+        <div style="margin-top: 10px;">
+            <span class="post-status status-approved">Одобрено</span>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <p style="text-align: center; padding: 50px;">Нет одобренных постов для публикации</p>
+{% endif %}
+
+{% if published_posts %}
+    <h3>📊 История публикаций:</h3>
+    {% for post in published_posts %}
+    <div class="post-card">
+        <div class="post-title">{{ post.title }}</div>
+        <div class="post-meta">
+            Опубликован: {{ post.published_at }}
+        </div>
+        {% if post.published_to_groups %}
+        <div style="background: #f0f0f0; padding: 10px; border-radius: 5px; margin-top: 10px;">
+            <strong>✅ Опубликовано в:</strong>
+            <ul style="margin-top: 5px; margin-left: 20px;">
+            {% for group in post.published_to_groups %}
+                <li>
+                    {% if group.platform == 'vk' %}
+                        📘 VK
+                    {% elif group.platform == 'ok' %}
+                        📙 OK.ru
+                    {% endif %}
+                    {{ group.name }} (ID: {{ group.id }}) - ID поста: {{ group.post_id }}
+                </li>
+            {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+{% endif %}
+
+<div style="text-align: center; margin-top: 20px;">
+    <a href="{{ url_for('dashboard') }}" class="btn">← Назад</a>
+</div>
+
+<div style="margin-top:15px;">
+    <button class="btn btn-warning optimize-btn"
+            data-post-id="{{ post.id }}"
+            data-post-text="{{ post.text }}">
+        🤖 AI Оптимизация
+    </button>
+</div>
+
+<div id="optimize-result-{{ post.id }}"
+     style="margin-top:10px; display:none;"></div>
+
+<script>
+document.querySelectorAll(".optimize-btn").forEach(button => {
+    button.addEventListener("click", async function () {
+        const postId = this.dataset.postId;
+        const postText = this.dataset.postText;
+
+        const resultBox = document.getElementById(
+            `optimize-result-${postId}`
+        );
+
+        resultBox.style.display = "block";
+        resultBox.innerHTML = "⏳ AI оптимизирует текст...";
+
+        try {
+            const response = await fetch("/ai/optimize-for-platform", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    text: postText,
+                    platform: "vk"
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                resultBox.innerHTML = `
+                    <strong>Оптимизированный текст:</strong><br>
+                    ${data.optimized_text}
+                `;
+            } else {
+                resultBox.innerHTML = `❌ ${data.error}`;
+            }
+
+        } catch (err) {
+            resultBox.innerHTML = "⚠️ Ошибка AI";
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>📤 Публикация с AI анализом</h2>
+    
+    <div class="dashboard-card">
+        <h3>{{ post.title }}</h3>
+        <div class="post-text">{{ post.text }}</div>
+        
+        <div style="margin: 20px 0;">
+            <button onclick="analyzeSEO()" class="btn btn-info">🔍 SEO Анализ</button>
+            <button onclick="optimizeForPlatform()" class="btn btn-primary">📱 Оптимизировать</button>
+            <button onclick="getPublishRecommendations()" class="btn btn-success">📈 Рекомендации</button>
+        </div>
+        
+        <div id="aiResults" style="margin: 20px 0; padding: 15px; background: #f5f5f5; border-radius: 8px;">
+            <em>Нажмите на кнопку выше для AI анализа</em>
+        </div>
+    </div>
+    
+    <div class="dashboard-card">
+        <h3>🏢 Выберите сообщества</h3>
+        <form method="POST" action="{{ url_for('publish_to_multiple_groups', post_id=post.id) }}">
+            {% for group in groups %}
+            <div class="form-group">
+                <input type="checkbox" name="groups" value="{{ group.id }}" id="group{{ group.id }}">
+                <label for="group{{ group.id }}">
+                    <strong>{{ group.name }}</strong> ({{ group.platform|upper }})
+                </label>
+            </div>
+            {% endfor %}
+            
+            <button type="submit" class="btn btn-success" style="margin-top: 20px;">
+                🚀 Опубликовать в выбранные сообщества
+            </button>
+        </form>
+    </div>
+    
+    <a href="{{ url_for('publish_posts') }}" class="btn">← Назад к списку</a>
+</div>
+
+<script>
+
+async function analyzeSEO() {
+    const text = `{{ post.text|escapejs }}`;
+    
+    const response = await fetch('/ai/seo-analysis', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({text: text})
+    });
+    
+    const data = await response.json();
+    
+    if (data.success && data.analysis) {
+        const analysis = data.analysis;
+        document.getElementById('aiResults').innerHTML = `
+            <h4>🔍 SEO Анализ:</h4>
+            <p><strong>Ключевые слова:</strong> ${analysis.keywords?.join(', ') || '—'}</p>
+            <p><strong>Плотность ключевых слов:</strong> ${(analysis.keyword_density * 100).toFixed(1) || '—'}%</p>
+            <p><strong>Читаемость:</strong> ${analysis.readability_level || '—'}</p>
+            <p><strong>SEO оценка:</strong> ${'⭐'.repeat(Math.floor(analysis.searchability_score / 2))} ${analysis.searchability_score}/10</p>
+            <p><strong>Рекомендуемые теги:</strong> ${analysis.suggested_tags?.join(', ') || '—'}</p>
+        `;
+    }
+}
+
+async function optimizeForPlatform() {
+    const platform = prompt('Выберите платформу (vk или ok):', 'vk');
+    if (!platform) return;
+    
+    const text = `{{ post.text|escapejs }}`;
+    
+    const response = await fetch('/ai/optimize-for-platform', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({text: text, platform: platform})
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+        document.getElementById('aiResults').innerHTML = `
+            <h4>📱 Оптимизированный текст для ${platform.toUpperCase()}:</h4>
+            <textarea style="width: 100%; min-height: 200px; padding: 10px;" readonly>${data.optimized_text}</textarea>
+            <button onclick="copyToClipboard(this)" class="btn btn-sm btn-primary" style="margin-top: 10px;">📋 Копировать</button>
+        `;
+    }
+}
+
+async function getPublishRecommendations() {
+    const text = `{{ post.text|escapejs }}`;
+    const platforms = ['vk', 'ok'];
+    
+    const response = await fetch('/ai/analyze-publication', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({post_id: {{ post.id }}, platforms: platforms})
+    });
+    
+    const data = await response.json();
+    
+    if (data.success && data.analysis) {
+        const analysis = data.analysis;
+        let platformsHtml = '';
+        
+        for (const [platform, info] of Object.entries(analysis.platform_fit || {})) {
+            platformsHtml += `<li><strong>${platform.toUpperCase()}:</strong> ${info.score}/10 - ${info.comment}</li>`;
+        }
+        
+        document.getElementById('aiResults').innerHTML = `
+            <h4>📈 Рекомендации по публикации:</h4>
+            <p><strong>Оценка виральности:</strong> ${'🔥'.repeat(Math.floor(analysis.virality_score / 2))} ${analysis.virality_score}/10</p>
+            <p><strong>Лучшее время для публикации:</strong> ${analysis.best_time}</p>
+            <p><strong>Рекомендуемые хештеги:</strong> ${analysis.hashtags?.join(' ') || '—'}</p>
+            <p><strong>Целевая аудитория:</strong> ${analysis.target_audience}</p>
+            <p><strong>Читаемость:</strong> ${analysis.readability_score}/10</p>
+            <p><strong>Советы по улучшению:</strong></p>
+            <ul>${analysis.improvement_suggestions?.map(s => `<li>${s}</li>`).join('') || '<li>—</li>'}</ul>
+            <p><strong>Соответствие платформам:</strong></p>
+            <ul>${platformsHtml}</ul>
+        `;
+    }
+}
+
+function copyToClipboard(button) {
+    const textarea = button.previousElementSibling;
+    textarea.select();
+    document.execCommand('copy');
+    alert('✅ Текст скопирован в буфер обмена!');
+}
+</script>
+{% endblock %}

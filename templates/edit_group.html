@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>✏️ Редактирование сообщества</h2>
+
+<div style="max-width: 600px; margin: 0 auto;">
+    <form method="POST" action="{{ url_for('update_group', group_id=group.id) }}">
+        <div class="form-group">
+            <label for="platform">Платформа *</label>
+            <select id="platform" name="platform" required>
+                <option value="vk" {% if group.platform == 'vk' %}selected{% endif %}>ВКонтакте (VK)</option>
+                <option value="ok" {% if group.platform == 'ok' %}selected{% endif %}>Одноклассники (OK.ru)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="name">Название сообщества *</label>
+            <input type="text" id="name" name="name" value="{{ group.name }}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="group_id">ID сообщества *</label>
+            <input type="text" id="group_id" name="group_id" value="{{ group.id }}" required>
+            <small style="color: #666;">VK: id из ссылки club123, OK: числовой ID группы</small>
+        </div>
+
+        <div class="form-group">
+            <label for="description">Описание</label>
+            <input type="text" id="description" name="description" value="{{ group.description or '' }}">
+        </div>
+
+        <div class="form-group">
+            <label for="token">Токен доступа *</label>
+            <textarea id="token" name="token" rows="3" required>{{ group.token }}</textarea>
+            <small style="color: #666;">Для VK: токен с правами wall, для OK: access_token</small>
+        </div>
+
+        <button type="submit" class="btn btn-primary">💾 Сохранить изменения</button>
+        <a href="{{ url_for('manage_groups') }}" class="btn">Отмена</a>
+    </form>
+</div>
+{% endblock %}

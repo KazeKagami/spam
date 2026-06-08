@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>👀 Модерация постов</h2>
+
+{% if posts %}
+    {% for post in posts %}
+    <div class="post-card">
+        <div class="post-title">{{ post.title }}</div>
+        <div class="post-meta">
+            Автор: {{ post.user_id }} | Создан: {{ post.created_at }}
+        </div>
+        <div class="post-text">{{ post.text }}</div>
+
+        {% if post.media and post.media|length > 0 %}
+        <div style="margin: 15px 0; padding: 15px; background: #f5f5f5; border-radius: 8px;">
+            <strong>📎 Вложения ({{ post.media|length }} файлов):</strong>
+            <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px;">
+                {% for file in post.media %}
+                <div style="text-align: center;">
+                    {% set file_ext = file.split('.')[-1].lower() %}
+                    {% if file_ext in ['jpg', 'jpeg', 'png', 'gif'] %}
+                        <img src="/uploads/{{ file.split('/')[-1] }}"
+                             style="max-width: 200px; max-height: 150px; border-radius: 5px; border: 1px solid #ddd; cursor: pointer;"
+                             onclick="window.open(this.src)"
+                             alt="preview">
+                        <div style="font-size: 11px; margin-top: 5px; color: #666;">Фото</div>
+                    {% elif file_ext in ['mp4', 'avi', 'mov'] %}
+                        <video style="max-width: 200px; max-height: 150px; border-radius: 5px; border: 1px solid #ddd;" controls>
+                            <source src="/uploads/{{ file.split('/')[-1] }}">
+                        </video>
+                        <div style="font-size: 11px; margin-top: 5px; color: #666;">Видео</div>
+                    {% else %}
+                        <div style="width: 150px; padding: 20px; background: #e0e0e0; border-radius: 5px; text-align: center;">
+                            📄 {{ file.split('/')[-1] }}
+                        </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div>
+            <span class="post-status status-pending">На модерации</span>
+        </div>
+        <div style="margin-top: 15px; display:flex; gap:10px; flex-wrap:wrap;">
+            <a href="{{ url_for('approve_post', post_id=post.id) }}"
+            class="btn btn-success">
+            ✅ Одобрить
+            </a>
+
+            <a href="{{ url_for('reject_post', post_id=post.id) }}"
+            class="btn btn-danger">
+            ❌ Отклонить
+            </a>
+
+            <button class="btn btn-warning ai-btn"
+                    data-post-id="{{ post.id }}">
+                🤖 AI Проверка
+            </button>
+        </div>
+
+        <div id="ai-result-{{ post.id }}"
+            style="margin-top:15px; display:none; padding:10px; border-radius:8px; background:#f8f9fa;">
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <p style="text-align: center; padding: 50px;">Нет постов на модерацию</p>
+{% endif %}
+
+<div style="text-align: center; margin-top: 20px;">
+    <a href="{{ url_for('dashboard') }}" class="btn">← Назад</a>
+</div>
+
+<script>
+document.querySelectorAll(".ai-btn").forEach(button => {
+    button.addEventListener("click", async function () {
+        const postId = this.dataset.postId;
+        const resultBox = document.getElementById(`ai-result-${postId}`);
+
+        resultBox.style.display = "block";
+        resultBox.innerHTML = "⏳ AI анализирует пост...";
+
+        try {
+            const response = await fetch("/ai/moderate-post", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    post_id: parseInt(postId)
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                const analysis = data.analysis;
+
+                resultBox.innerHTML = `
+                    <strong>🤖 AI Анализ:</strong><br>
+                    Решение: <b>${analysis.decision}</b><br>
+                    Уверенность: <b>${Math.round(analysis.confidence * 100)}%</b><br>
+                    Причина: ${analysis.summary}
+                `;
+
+            } else {
+                resultBox.innerHTML = `❌ ${data.error}`;
+            }
+
+        } catch (error) {
+            resultBox.innerHTML = "⚠️ Ошибка подключения";
+        }
+    });
+});
+</script>
+{% endblock %}

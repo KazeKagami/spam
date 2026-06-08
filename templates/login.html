@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 400px; margin: 50px auto;">
+    <h2 style="text-align: center; margin-bottom: 30px;">Авторизация</h2>
+
+    <form method="POST">
+        <div class="form-group">
+            <label for="username">Имя пользователя</label>
+            <input type="text" id="username" name="username" required placeholder="Введите ваше имя">
+        </div>
+
+        <div class="form-group">
+            <label for="password">Пароль</label>
+            <input type="password" id="password" name="password" required placeholder="Введите пароль">
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Войти</button>
+    </form>
+
+    <div style="margin-top: 20px; padding: 15px; background: #f0f0f0; border-radius: 5px;">
+        <h4>Тестовые пароли:</h4>
+        <ul style="margin-top: 10px; margin-left: 20px;">
+            <li>ADMIN → admin123</li>
+            <li>WRITER → writer123</li>
+            <li>VIEWER → viewer123</li>
+            <li>PUBLISHER → publisher123</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

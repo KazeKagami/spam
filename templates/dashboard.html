@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Панель управления</h2>
+
+<div class="stats">
+    <div class="stat-box">
+        <div class="stat-number">{{ total_posts }}</div>
+        <div class="stat-label">Всего постов</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-number">{{ pending }}</div>
+        <div class="stat-label">На модерации</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-number">{{ approved }}</div>
+        <div class="stat-label">Одобрено</div>
+    </div>
+</div>
+
+<div class="dashboard-buttons">
+    {% if role in ['WRITER', 'PUBLISHER', 'ADMIN'] %}
+    <div class="dashboard-card">
+        <h3>✍️ Создать пост</h3>
+        <p>Напишите новый пост для публикации</p>
+        <a href="{{ url_for('create_post') }}" class="btn btn-primary">Создать</a>
+    </div>
+    {% endif %}
+
+    {% if role in ['VIEWER', 'PUBLISHER', 'ADMIN'] %}
+    <div class="dashboard-card">
+        <h3>👀 Модерация</h3>
+        <p>Проверьте и одобрите посты</p>
+        <a href="{{ url_for('moderate_posts') }}" class="btn btn-warning">Модерировать</a>
+    </div>
+    {% endif %}
+
+    {% if role in ['PUBLISHER', 'ADMIN'] %}
+    <div class="dashboard-card">
+        <h3>📤 Публикация в соцсети</h3>
+        <p>Опубликуйте одобренные посты в VK и OK.ru</p>
+        <a href="{{ url_for('publish_posts') }}" class="btn btn-success">Публиковать</a>
+    </div>
+    {% endif %}
+
+    {% if role in ['PUBLISHER', 'ADMIN'] %}
+    <div class="dashboard-card">
+        <h3>🏢 Управление сообществами</h3>
+        <p>Добавляйте и редактируйте группы VK и OK.ru</p>
+        <a href="{{ url_for('manage_groups') }}" class="btn btn-info">Управлять</a>
+    </div>
+    {% endif %}
+
+    {% if role == 'ADMIN' %}
+    <div class="dashboard-card">
+        <h3>📋 Все посты</h3>
+        <p>Просмотр всех постов</p>
+        <a href="{{ url_for('all_posts') }}" class="btn btn-info">Смотреть</a>
+    </div>
+    {% endif %}
+</div>
+
+<div class="dashboard-card" style="margin-top: 30px;">
+    <h3>🤖 AI Возможности по вашей роли</h3>
+    <div style="padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; color: white;">
+        {% if role == 'WRITER' %}
+            <h4>✍️ Writer AI Tools:</h4>
+            <ul>
+                <li>🤖 Улучшение текста - автоматическая коррекция грамматики и стиля</li>
+                <li>📝 Проверка грамматики - детальный анализ ошибок</li>
+                <li>💡 Генерация заголовков - AI предложит 5 вариантов</li>
+                <li>⚡ Быстрая проверка - анализ категорий контента</li>
+            </ul>
+        {% elif role == 'CENSOR' %}
+            <h4>🔍 Censor AI Tools:</h4>
+            <ul>
+                <li>🤖 AI Модерация - автоматический анализ постов</li>
+                <li>🚫 Авто-отклонение при confidence > 85%</li>
+                <li>📊 Детальный отчет о нарушениях</li>
+                <li>💡 Рекомендации по исправлению</li>
+            </ul>
+        {% elif role == 'PUBLISHER' %}
+            <h4>📊 Publisher AI Tools:</h4>
+            <ul>
+                <li>🔍 SEO анализ - ключевые слова и читаемость</li>
+                <li>📱 Оптимизация для VK и OK.ru</li>
+                <li>📈 Прогноз виральности</li>
+                <li>🏷️ Генерация хештегов</li>
+                <li>⏰ Рекомендации по времени публикации</li>
+            </ul>
+        {% elif role == 'VIEWER' %}
+            <h4>👀 Viewer AI Tools:</h4>
+            <ul>
+                <li>⚡ Быстрая проверка контента</li>
+                <li>📊 Анализ категорий текста</li>
+            </ul>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
