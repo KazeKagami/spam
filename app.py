@@ -18,7 +18,8 @@ app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'secret-key-12345')
 
 # Настройки загрузки файлов
-UPLOAD_FOLDER = Path('uploads')
+BASE_DIR = Path(__file__).resolve().parent
+UPLOAD_FOLDER = BASE_DIR / 'uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'mp4', 'avi', 'mov'}
 MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50MB
 
@@ -31,13 +32,16 @@ def allowed_file(filename):
 
 
 # Пути к файлам
-DATA_DIR = Path('data_pack')
+DATA_DIR = BASE_DIR / 'data_pack'
 ROLES_FILE = DATA_DIR / 'roles.json'
 SPAMER_FILE = DATA_DIR / 'spamer.json'
 USER_ROLES_FILE = DATA_DIR / 'user_roles.json'
 LOG_FILE = DATA_DIR / 'log_inf.json'
 GROUPS_FILE = DATA_DIR / 'groups.json'
 TRAINING_DATA_FILE = DATA_DIR / 'training_data.json'
+
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+UPLOAD_FOLDER.mkdir(parents=True, exist_ok=True)
 
 # VK настройки
 VK_API_VERSION = '5.131'
@@ -1101,5 +1105,5 @@ def ai_analyze_style():
         return jsonify({'success': False, 'error': analysis})
 
 if __name__ == '__main__':
-    DATA_DIR.mkdir(exist_ok=True)
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    port = int(os.getenv('PORT', 5000))
+    app.run(debug=True, host='0.0.0.0', port=port)
